@@ -1,113 +1,353 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Télécommande de Barre</title>
+<title>Télécommande du bateau</title>
+
 <style>
-body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f2f5; margin: 0; padding: 20px; }                                                                                            /* Style général de la page */
-h1 { color: #333; }                                                                                                                                                                                          /* Style du titre */
-button { padding: 12px 24px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 20px; }                                             /* Style du bouton */
-button:hover { background-color: #0056b3; }                                                                                                                                                                  /* Effet au survol du bouton */
-#status { font-weight: bold; margin-bottom: 20px; color: #d9534f; }                                                                                                                                          /* Style du texte d'état */
-#joystick-container { position: relative; width: 200px; height: 200px; background-color: #e4e6eb; border-radius: 50%; margin: 0 auto; touch-action: none; }                                                  /* Zone grise du joystick */
-#joystick { position: absolute; width: 80px; height: 80px; background-color: #007bff; border-radius: 50%; top: 60px; left: 60px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }                   /* Curseur mobile du joystick */
-#angle-display { font-size: 20px; margin-top: 20px; color: #333; }                                                                                                                                           /* Affichage textuel de l'angle */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #eaf3f8;
+    margin: 0;
+    padding: 25px 15px;
+    color: #263746;
+}
+
+h1 {
+    color: #12649a;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #607786;
+    margin-bottom: 25px;
+}
+
+#connectBtn, #disconnectBtn {
+    padding: 14px 25px;
+    font-size: 17px;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    margin: 8px;
+}
+
+#connectBtn {
+    background: #087dcc;
+}
+
+#disconnectBtn {
+    background: #d94343;
+    display: none;
+}
+
+#status {
+    margin: 20px auto;
+    font-weight: bold;
+    color: #d94343;
+}
+
+#joystick-container {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    background: #cbdde8;
+    border: 5px solid #a9c5d5;
+    border-radius: 50%;
+    margin: 30px auto;
+    touch-action: none;
+    user-select: none;
+}
+
+#joystick {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: #087dcc;
+    border: 4px solid white;
+    border-radius: 50%;
+    top: 65px;
+    left: 65px;
+    box-shadow: 0 4px 10px #0003;
+    pointer-events: none;
+}
+
+#angle-display {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+#angleValue {
+    color: #087dcc;
+}
+
+.instructions {
+    margin: 25px auto;
+    max-width: 350px;
+    padding: 15px;
+    background: white;
+    border-radius: 12px;
+    line-height: 1.6;
+}
+
+#joystick-container.disabled {
+    opacity: 0.45;
+}
 </style>
 </head>
+
 <body>
 
-<h1>Télécommande de Barre</h1>
-<button id="connectBtn">Connecter la micro:bit</button>                                                                                                                                                        <!-- Bouton de connexion -->
-<div id="status">Statut : Déconnecté</div>                                                                                                                                                                     <!-- Indicateur d'état -->
+<h1>🚤 Télécommande du bateau</h1>
+<p class="subtitle">Commande Bluetooth de la barre</p>
 
-<div id="joystick-container">                                                                                                                                                                                  <!-- Conteneur du joystick -->
-<div id="joystick"></div>                                                                                                                                                                                      <!-- Poignée du joystick -->
+<button id="connectBtn">Connecter la micro:bit</button>
+<button id="disconnectBtn">Déconnecter</button>
+
+<div id="status">Statut : Déconnecté</div>
+
+<div id="joystick-container" class="disabled">
+    <div id="joystick"></div>
 </div>
 
-<div id="angle-display">Angle de la barre : <span id="angleValue">90</span>°</div>                                                                                                                             <!-- Texte de l'angle en direct -->
+<div id="angle-display">
+    Angle de la barre : <span id="angleValue">90</span>°
+</div>
+
+<div class="instructions">
+    <strong>Comment utiliser la télécommande ?</strong><br>
+    1. Connecte la micro:bit en Bluetooth.<br>
+    2. Déplace le joystick vers la gauche ou la droite.<br>
+    3. Relâche pour revenir à 90°.
+</div>
 
 <script>
-let bluetoothDevice;                                                                                                                                                                                           // Stocke l'appareil micro:bit
-let uartCharacteristic;                                                                                                                                                                                        // Canal de transmission Bluetooth UART
 
-const connectBtn = document.getElementById('connectBtn');                                                                                                                                                      // Sélection du bouton HTML
-const statusDiv = document.getElementById('status');                                                                                                                                                           // Sélection de la zone de statut
-const joystick = document.getElementById('joystick');                                                                                                                                                          // Sélection du curseur joystick
-const container = document.getElementById('joystick-container');                                                                                                                                               // Sélection du conteneur
-const angleValueSpan = document.getElementById('angleValue');                                                                                                                                                  // Sélection du texte de l'angle
+// Éléments de la page
+const connectBtn = document.getElementById("connectBtn");
+const disconnectBtn = document.getElementById("disconnectBtn");
+const statusDiv = document.getElementById("status");
+const joystick = document.getElementById("joystick");
+const container = document.getElementById("joystick-container");
+const angleValue = document.getElementById("angleValue");
 
-const UART_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';                                                                                                                                              // UUID standard service UART
-const UART_CHAR_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';                                                                                                                                              // UUID standard écriture RX
+// Bluetooth UART
+const UART_SERVICE_UUID =
+"6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 
-connectBtn.addEventListener('click', async () => {                                                                                                                                                             // Action au clic sur connecter
-try {
-statusDiv.textContent = "Statut : Recherche...";                                                                                                                                                               // Message de recherche
-bluetoothDevice = await navigator.bluetooth.requestDevice({                                                                                                                                                    // Ouvre la fenêtre d'appairage
-filters: [{ namePrefix: 'BBC micro:bit' }],                                                                                                                                                                    // Filtre par nom micro:bit
-optionalServices: [UART_SERVICE_UUID]                                                                                                                                                                          // Service optionnel requis
-});
+const UART_RX_UUID =
+"6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 
-const server = await bluetoothDevice.gatt.connect();                                                                                                                                                           // Connexion au serveur GATT
-const service = await server.getPrimaryService(UART_SERVICE_UUID);                                                                                                                                             // Récupération du service UART
-uartCharacteristic = await service.getCharacteristic(UART_CHAR_RX_UUID);                                                                                                                                       // Récupération caractéristique RX
+let bluetoothDevice = null;
+let uartCharacteristic = null;
 
-statusDiv.textContent = "Statut : Connecté !";                                                                                                                                                                 // Message si succès
-statusDiv.style.color = "#28a745";                                                                                                                                                                             // Couleur verte
-connectBtn.style.display = "none";                                                                                                                                                                             // Masque le bouton de connexion
-} catch (error) {
-console.error(error);                                                                                                                                                                                          // Affiche l'erreur en console
-statusDiv.textContent = "Statut : Échec de la connexion";                                                                                                                                                      // Message si échec
-}
-});
+let isDragging = false;
+let currentAngle = 90;
 
-let isDragging = false;                                                                                                                                                                                       // Indique si l'utilisateur glisse le joystick
-const maxDelta = 60;                                                                                                                                                                                          // Amplitude maximale en pixels
+const maxDelta = 65;
 
-function handleMove(clientX) {                                                                                                                                                                                // Fonction de calcul du mouvement
-const rect = container.getBoundingClientRect();                                                                                                                                                               // Récupère les dimensions
-const centerX = rect.left + rect.width / 2;                                                                                                                                                                   // Calcule le centre horizontal
-let deltaX = clientX - centerX;                                                                                                                                                                               // Écart par rapport au centre
+// File d'attente des messages Bluetooth
+let pendingAngle = null;
+let sending = false;
+let lastSentAngle = null;
 
-if (deltaX < -maxDelta) deltaX = -maxDelta;                                                                                                                                                                   // Limite gauche
-if (deltaX > maxDelta) deltaX = maxDelta;                                                                                                                                                                     // Limite droite
-
-joystick.style.transform = `translate(${deltaX}px, 0px)`;                                                                                                                                                     // Déplace visuellement le joystick
-
-let angle = Math.round(90 + (deltaX / maxDelta) * 90);                                                                                                                                                        // Convertit en angle de 0 à 180°
-angleValueSpan.textContent = angle;                                                                                                                                                                           // Met à jour l'affichage de l'angle
-
-sendAngleToMicrobit(angle);                                                                                                                                                                                   // Envoie la valeur à la micro:bit
+// Affichage du statut
+function setStatus(message, color) {
+    statusDiv.textContent = "Statut : " + message;
+    statusDiv.style.color = color;
 }
 
-joystick.addEventListener('pointerdown', (e) => {                                                                                                                                                             // Quand on clique/touche le joystick
-isDragging = true;                                                                                                                                                                                            // Active le mouvement
-joystick.setPointerCapture(e.pointerId);                                                                                                                                                                      // Capture le pointeur tactile/souris
+// Connexion Bluetooth
+connectBtn.addEventListener("click", async () => {
+
+    if (!navigator.bluetooth) {
+        setStatus("Bluetooth non compatible avec ce navigateur", "#d94343");
+        return;
+    }
+
+    try {
+        setStatus("Recherche de la micro:bit...", "#d68b00");
+
+        bluetoothDevice = await navigator.bluetooth.requestDevice({
+            filters: [
+                { namePrefix: "BBC micro:bit" }
+            ],
+            optionalServices: [UART_SERVICE_UUID]
+        });
+
+        bluetoothDevice.addEventListener(
+            "gattserverdisconnected",
+            handleDisconnect
+        );
+
+        const server = await bluetoothDevice.gatt.connect();
+
+        const service = await server.getPrimaryService(
+            UART_SERVICE_UUID
+        );
+
+        uartCharacteristic = await service.getCharacteristic(
+            UART_RX_UUID
+        );
+
+        setStatus("Connecté !", "#219653");
+
+        connectBtn.style.display = "none";
+        disconnectBtn.style.display = "inline-block";
+        container.classList.remove("disabled");
+
+        // Position initiale
+        await sendAngle(90);
+
+    } catch (error) {
+        console.error(error);
+        setStatus("Échec de connexion : " + error.message, "#d94343");
+    }
 });
 
-joystick.addEventListener('pointermove', (e) => {                                                                                                                                                             // Quand on déplace le pointeur
-if (!isDragging) return;                                                                                                                                                                                      // Sort si non cliqué
-handleMove(e.clientX);                                                                                                                                                                                        // Exécute le calcul de position
+// Déconnexion
+disconnectBtn.addEventListener("click", () => {
+    if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+        bluetoothDevice.gatt.disconnect();
+    }
 });
 
-joystick.addEventListener('pointerup', (e) => {                                                                                                                                                               // Quand on relâche le joystick
-isDragging = false;                                                                                                                                                                                           // Désactive le mouvement
-joystick.style.transform = `translate(0px, 0px)`;                                                                                                                                                             // Remet le joystick au centre
-angleValueSpan.textContent = 90;                                                                                                                                                                              // Remet l'affichage à 90°
-sendAngleToMicrobit(90);                                                                                                                                                                                      // Envoie la position neutre (90°)
+// Gestion de la déconnexion
+function handleDisconnect() {
+    uartCharacteristic = null;
+    pendingAngle = null;
+    sending = false;
+    lastSentAngle = null;
+
+    setStatus("Déconnecté", "#d94343");
+
+    connectBtn.style.display = "inline-block";
+    disconnectBtn.style.display = "none";
+
+    container.classList.add("disabled");
+
+    resetJoystick();
+}
+
+// Envoi des angles en Bluetooth
+async function sendAngle(angle) {
+
+    if (!uartCharacteristic) return;
+
+    pendingAngle = angle;
+
+    if (sending) return;
+
+    sending = true;
+
+    while (pendingAngle !== null && uartCharacteristic) {
+
+        const value = pendingAngle;
+        pendingAngle = null;
+
+        if (value === lastSentAngle) continue;
+
+        try {
+            const encoder = new TextEncoder();
+
+            await uartCharacteristic.writeValue(
+                encoder.encode(String(value) + "\n")
+            );
+
+            lastSentAngle = value;
+
+        } catch (error) {
+            console.error("Erreur d'envoi :", error);
+            setStatus("Erreur de communication", "#d94343");
+            break;
+        }
+    }
+
+    sending = false;
+}
+
+// Calcul de la position du joystick
+function handleMove(clientX) {
+
+    if (!isDragging) return;
+
+    const rect = container.getBoundingClientRect();
+
+    const centerX = rect.left + rect.width / 2;
+
+    let deltaX = clientX - centerX;
+
+    deltaX = Math.max(-maxDelta, Math.min(maxDelta, deltaX));
+
+    joystick.style.transform =
+        `translate(${deltaX}px, 0px)`;
+
+    currentAngle = Math.round(
+        90 + (deltaX / maxDelta) * 90
+    );
+
+    currentAngle = Math.max(0, Math.min(180, currentAngle));
+
+    angleValue.textContent = currentAngle;
+
+    sendAngle(currentAngle);
+}
+
+// Déplacement tactile ou souris
+container.addEventListener("pointerdown", (event) => {
+
+    if (!uartCharacteristic) return;
+
+    isDragging = true;
+
+    container.setPointerCapture(event.pointerId);
+
+    handleMove(event.clientX);
 });
 
-async function sendAngleToMicrobit(angle) {                                                                                                                                                                   // Fonction d'envoi Bluetooth
-if (uartCharacteristic) {                                                                                                                                                                                     // Vérifie si la liaison est active
-try {
-const encoder = new TextEncoder();                                                                                                                                                                            // Prépare l'encodeur texte
-await uartCharacteristic.writeValue(encoder.encode(angle + "
-"));                                                                                                                                                                                                          // Envoie l'angle + retour à la ligne
-} catch (error) {
-console.error("Erreur d'envoi : ", error);                                                                                                                                                                    // Gestion des erreurs d'envoi
+container.addEventListener("pointermove", (event) => {
+
+    if (!isDragging) return;
+
+    handleMove(event.clientX);
+});
+
+// Relâchement du joystick
+function releaseJoystick() {
+
+    if (!isDragging) return;
+
+    isDragging = false;
+
+    resetJoystick();
+
+    currentAngle = 90;
+    angleValue.textContent = 90;
+
+    sendAngle(90);
 }
+
+container.addEventListener("pointerup", releaseJoystick);
+container.addEventListener("pointercancel", releaseJoystick);
+
+function resetJoystick() {
+    isDragging = false;
+    joystick.style.transform = "translate(0px, 0px)";
+    currentAngle = 90;
+    angleValue.textContent = 90;
 }
-}
+
 </script>
+
 </body>
-</html> 
+</html>
+
