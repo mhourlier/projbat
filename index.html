@@ -1,43 +1,79 @@
 
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#eaf3f8">
+
 <title>Télécommande du bateau</title>
 
 <style>
+
 * {
     box-sizing: border-box;
 }
 
 body {
     font-family: Arial, sans-serif;
-    text-align: center;
-    background: #eaf3f8;
     margin: 0;
-    padding: 25px 15px;
+    padding: 16px;
+    background: #eaf3f8;
     color: #263746;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+}
+
+.topbar {
+    max-width: 1100px;
+    margin: 0 auto 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
 }
 
 h1 {
     color: #12649a;
-    margin-bottom: 10px;
+    font-size: 25px;
+    margin: 0 0 5px;
 }
 
 .subtitle {
     color: #607786;
-    margin-bottom: 25px;
+    font-size: 13px;
+    margin: 0;
 }
 
-#connectBtn, #disconnectBtn {
-    padding: 14px 25px;
-    font-size: 17px;
-    border: none;
-    border-radius: 10px;
+.connection {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+#status {
+    font-size: 12px;
+    font-weight: bold;
+    color: #d94343;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+#connectBtn,
+#disconnectBtn {
+    padding: 11px 15px;
+    border-radius: 8px;
     color: white;
-    cursor: pointer;
-    margin: 8px;
+    font-size: 13px;
+    font-weight: bold;
 }
 
 #connectBtn {
@@ -49,142 +85,510 @@ h1 {
     display: none;
 }
 
-#status {
-    margin: 20px auto;
-    font-weight: bold;
-    color: #d94343;
+.layout {
+    max-width: 1100px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
 }
 
-#joystick-container {
-    position: relative;
-    width: 220px;
-    height: 220px;
-    background: #cbdde8;
-    border: 5px solid #a9c5d5;
-    border-radius: 50%;
-    margin: 30px auto;
-    touch-action: none;
-    user-select: none;
-}
-
-#joystick {
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    background: #087dcc;
-    border: 4px solid white;
-    border-radius: 50%;
-    top: 65px;
-    left: 65px;
-    box-shadow: 0 4px 10px #0003;
-    pointer-events: none;
-}
-
-#angle-display {
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 20px;
-}
-
-#angleValue {
-    color: #087dcc;
-}
-
-.instructions {
-    margin: 25px auto;
-    max-width: 350px;
-    padding: 15px;
+.panel {
     background: white;
-    border-radius: 12px;
-    line-height: 1.6;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 3px 12px #0000000d;
 }
 
-#joystick-container.disabled {
-    opacity: 0.45;
+.panel h2 {
+    font-size: 17px;
+    color: #12649a;
+    margin: 0 0 18px;
 }
+
+.angle-number {
+    text-align: center;
+    font-size: 56px;
+    font-weight: bold;
+    color: #087dcc;
+    margin: 5px 0;
+}
+
+.angle-description {
+    text-align: center;
+    color: #607786;
+    font-size: 13px;
+    margin-bottom: 24px;
+}
+
+.range-container {
+    padding: 10px 3px;
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 12px;
+    cursor: pointer;
+    accent-color: #087dcc;
+    touch-action: pan-y;
+}
+
+.scale {
+    display: flex;
+    justify-content: space-between;
+    color: #607786;
+    font-size: 12px;
+    margin-top: 12px;
+}
+
+.direction {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 18px;
+    gap: 8px;
+}
+
+.direction span {
+    background: #eaf3f8;
+    padding: 9px;
+    border-radius: 7px;
+    text-align: center;
+    font-size: 12px;
+    flex: 1;
+}
+
+.controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.control-btn {
+    padding: 20px 10px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #12649a;
+    background: #eaf3f8;
+    border-radius: 12px;
+    transition: background 0.15s;
+}
+
+.control-btn:active {
+    background: #b8d8eb;
+}
+
+.control-btn small {
+    display: block;
+    font-size: 11px;
+    font-weight: normal;
+    margin-top: 5px;
+}
+
+.center-btn {
+    grid-column: span 2;
+    background: #087dcc;
+    color: white;
+    padding: 18px;
+    font-size: 16px;
+}
+
+.center-btn:active {
+    background: #075b99;
+}
+
+button:disabled,
+input:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.info {
+    max-width: 1100px;
+    margin: 15px auto 0;
+    text-align: center;
+    color: #607786;
+    font-size: 12px;
+}
+
+/* MODE PAYSAGE */
+
+@media (orientation: landscape) and (min-width: 600px) {
+
+    body {
+        padding: 12px 20px;
+    }
+
+    .layout {
+        grid-template-columns: 1.4fr 0.85fr;
+        align-items: stretch;
+    }
+
+    .panel {
+        min-height: 280px;
+        padding: 22px;
+    }
+
+    .angle-number {
+        font-size: 64px;
+        margin: 8px 0;
+    }
+
+    .range-container {
+        margin-top: 25px;
+    }
+
+    .controls-grid {
+        gap: 15px;
+    }
+
+    .control-btn {
+        padding: 22px 8px;
+    }
+}
+
+/* PETIT ÉCRAN EN PAYSAGE */
+
+@media (orientation: landscape) and (max-height: 500px) {
+
+    body {
+        padding: 7px 14px;
+    }
+
+    .topbar {
+        margin-bottom: 8px;
+    }
+
+    h1 {
+        font-size: 19px;
+    }
+
+    .panel {
+        padding: 12px 18px;
+        min-height: 0;
+    }
+
+    .panel h2 {
+        margin-bottom: 8px;
+    }
+
+    .angle-number {
+        font-size: 42px;
+        margin: 0;
+    }
+
+    .angle-description {
+        margin-bottom: 8px;
+    }
+
+    .range-container {
+        margin-top: 8px;
+    }
+
+    .control-btn {
+        padding: 12px 8px;
+        font-size: 17px;
+    }
+
+    .center-btn {
+        padding: 12px;
+    }
+
+    .info {
+        margin-top: 7px;
+    }
+}
+
+@media (max-width: 360px) {
+
+    .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .connection {
+        justify-content: flex-start;
+    }
+
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>🚤 Télécommande du bateau</h1>
-<p class="subtitle">Commande Bluetooth de la barre</p>
+<header class="topbar">
 
-<button id="connectBtn">Connecter la micro:bit</button>
-<button id="disconnectBtn">Déconnecter</button>
+    <div>
+        <h1>🚤 Télécommande du bateau</h1>
+        <p class="subtitle">Pilotage Bluetooth de la barre</p>
+    </div>
 
-<div id="status">Statut : Déconnecté</div>
+    <div class="connection">
 
-<div id="joystick-container" class="disabled">
-    <div id="joystick"></div>
+        <div id="status">Déconnecté</div>
+
+        <button id="connectBtn">
+            Connecter
+        </button>
+
+        <button id="disconnectBtn">
+            Déconnecter
+        </button>
+
+    </div>
+
+</header>
+
+
+<main class="layout">
+
+    <!-- COMMANDE PRINCIPALE -->
+
+    <section class="panel">
+
+        <h2>Commande de direction</h2>
+
+        <div class="angle-number">
+            <span id="angleValue">90</span>°
+        </div>
+
+        <div class="angle-description" id="angleDescription">
+            Position centrale
+        </div>
+
+        <div class="range-container">
+
+            <input
+                type="range"
+                id="angleSlider"
+                min="50"
+                max="130"
+                step="1"
+                value="90"
+                disabled
+            >
+
+            <div class="scale">
+                <span>50°</span>
+                <span>70°</span>
+                <span>90°</span>
+                <span>110°</span>
+                <span>130°</span>
+            </div>
+
+        </div>
+
+        <div class="direction">
+            <span>← Gauche</span>
+            <span>Centre</span>
+            <span>Droite →</span>
+        </div>
+
+    </section>
+
+
+    <!-- COMMANDES DE PRECISION -->
+
+    <section class="panel">
+
+        <h2>Réglage précis</h2>
+
+        <div class="controls-grid">
+
+            <button
+                class="control-btn"
+                id="minus5"
+                disabled
+            >
+                −5°
+                <small>Correction rapide</small>
+            </button>
+
+            <button
+                class="control-btn"
+                id="plus5"
+                disabled
+            >
+                +5°
+                <small>Correction rapide</small>
+            </button>
+
+            <button
+                class="control-btn"
+                id="minus1"
+                disabled
+            >
+                −1°
+                <small>Réglage fin</small>
+            </button>
+
+            <button
+                class="control-btn"
+                id="plus1"
+                disabled
+            >
+                +1°
+                <small>Réglage fin</small>
+            </button>
+
+            <button
+                class="control-btn center-btn"
+                id="centerBtn"
+                disabled
+            >
+                ⊙ RETOUR AU CENTRE : 90°
+            </button>
+
+        </div>
+
+    </section>
+
+</main>
+
+<div class="info">
+    Déplace le curseur pour diriger le bateau.
+    Utilise les boutons pour ajuster précisément la barre.
 </div>
 
-<div id="angle-display">
-    Angle de la barre : <span id="angleValue">90</span>°
-</div>
-
-<div class="instructions">
-    <strong>Comment utiliser la télécommande ?</strong><br>
-    1. Connecte la micro:bit en Bluetooth.<br>
-    2. Déplace le joystick vers la gauche ou la droite.<br>
-    3. Relâche pour revenir à 90°.
-</div>
 
 <script>
 
-// Éléments de la page
+// --------------------------------------
+// ELEMENTS DE LA PAGE
+// --------------------------------------
+
 const connectBtn = document.getElementById("connectBtn");
 const disconnectBtn = document.getElementById("disconnectBtn");
 const statusDiv = document.getElementById("status");
-const joystick = document.getElementById("joystick");
-const container = document.getElementById("joystick-container");
-const angleValue = document.getElementById("angleValue");
 
-// Bluetooth UART
+const angleSlider = document.getElementById("angleSlider");
+const angleValue = document.getElementById("angleValue");
+const angleDescription = document.getElementById("angleDescription");
+
+const minus5 = document.getElementById("minus5");
+const plus5 = document.getElementById("plus5");
+const minus1 = document.getElementById("minus1");
+const plus1 = document.getElementById("plus1");
+const centerBtn = document.getElementById("centerBtn");
+
+
+// --------------------------------------
+// BLUETOOTH UART
+// --------------------------------------
+
 const UART_SERVICE_UUID =
 "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 
+// IMPORTANT : RX de la micro:bit = écriture depuis la page
 const UART_RX_UUID =
 "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
 let bluetoothDevice = null;
 let uartCharacteristic = null;
 
-let isDragging = false;
+
+// --------------------------------------
+// VARIABLES
+// --------------------------------------
+
 let currentAngle = 90;
 
-const maxDelta = 65;
-
-// File d'attente Bluetooth
 let pendingAngle = null;
 let sending = false;
 let lastSentAngle = null;
 
-// Affichage du statut
+
+// --------------------------------------
+// AFFICHAGE DU STATUT
+// --------------------------------------
+
 function setStatus(message, color) {
-    statusDiv.textContent = "Statut : " + message;
+
+    statusDiv.textContent = message;
     statusDiv.style.color = color;
+
 }
 
-// Connexion Bluetooth
+
+// --------------------------------------
+// ACTIVATION DES COMMANDES
+// --------------------------------------
+
+function setControlsEnabled(enabled) {
+
+    angleSlider.disabled = !enabled;
+
+    minus5.disabled = !enabled;
+    plus5.disabled = !enabled;
+
+    minus1.disabled = !enabled;
+    plus1.disabled = !enabled;
+
+    centerBtn.disabled = !enabled;
+
+}
+
+
+// --------------------------------------
+// MISE A JOUR DE L'ANGLE
+// --------------------------------------
+
+function updateAngleDisplay(angle) {
+
+    currentAngle = Math.max(
+        50,
+        Math.min(130, Math.round(angle))
+    );
+
+    angleSlider.value = currentAngle;
+    angleValue.textContent = currentAngle;
+
+    if (currentAngle < 90) {
+
+        angleDescription.textContent = "Commande vers la gauche";
+
+    } else if (currentAngle > 90) {
+
+        angleDescription.textContent = "Commande vers la droite";
+
+    } else {
+
+        angleDescription.textContent = "Position centrale";
+
+    }
+
+}
+
+
+// --------------------------------------
+// CONNEXION BLUETOOTH
+// --------------------------------------
+
 connectBtn.addEventListener("click", async () => {
 
     if (!navigator.bluetooth) {
+
         setStatus(
-            "Bluetooth non compatible avec ce navigateur",
+            "Bluetooth non compatible",
             "#d94343"
         );
+
         return;
+
     }
 
     try {
+
         setStatus("Recherche de la micro:bit...", "#d68b00");
 
         bluetoothDevice = await navigator.bluetooth.requestDevice({
+
             filters: [
                 { namePrefix: "BBC micro:bit" }
             ],
+
             optionalServices: [UART_SERVICE_UUID]
+
         });
 
         bluetoothDevice.addEventListener(
@@ -202,46 +606,59 @@ connectBtn.addEventListener("click", async () => {
             UART_RX_UUID
         );
 
-        // Informations utiles pour le diagnostic
-        console.log("Caractéristique UART RX :", uartCharacteristic);
-        console.log("Propriétés Bluetooth :", uartCharacteristic.properties);
+        console.log(
+            "Caractéristique Bluetooth :",
+            uartCharacteristic.properties
+        );
 
         setStatus("Connecté !", "#219653");
 
         connectBtn.style.display = "none";
         disconnectBtn.style.display = "inline-block";
-        container.classList.remove("disabled");
 
-        // Réinitialisation des commandes
+        setControlsEnabled(true);
+
         pendingAngle = null;
         lastSentAngle = null;
-        currentAngle = 90;
 
-        // Position initiale
+        updateAngleDisplay(90);
+
+        // Envoi de la position centrale
         await sendAngle(90);
 
     } catch (error) {
+
         console.error(error);
 
         setStatus(
-            "Échec de connexion : " + error.message,
+            "Erreur : " + error.message,
             "#d94343"
         );
+
     }
+
 });
 
-// Déconnexion
+
+// --------------------------------------
+// DECONNEXION
+// --------------------------------------
+
 disconnectBtn.addEventListener("click", () => {
 
     if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+
         bluetoothDevice.gatt.disconnect();
+
     }
+
 });
 
-// Gestion de la déconnexion
+
 function handleDisconnect() {
 
     uartCharacteristic = null;
+
     pendingAngle = null;
     sending = false;
     lastSentAngle = null;
@@ -251,18 +668,25 @@ function handleDisconnect() {
     connectBtn.style.display = "inline-block";
     disconnectBtn.style.display = "none";
 
-    container.classList.add("disabled");
+    setControlsEnabled(false);
 
-    resetJoystick();
+    updateAngleDisplay(90);
+
 }
 
-// ENVOI DES ANGLES EN BLUETOOTH
+
+// --------------------------------------
+// ENVOI BLUETOOTH
+// --------------------------------------
+
 async function sendAngle(angle) {
 
     if (!uartCharacteristic) return;
 
-    // Limitation de sécurité
-    angle = Math.max(50, Math.min(130, Math.round(angle)));
+    angle = Math.max(
+        50,
+        Math.min(130, Math.round(angle))
+    );
 
     pendingAngle = angle;
 
@@ -279,44 +703,46 @@ async function sendAngle(angle) {
 
         try {
 
-            const encoder = new TextEncoder();
-            const data = encoder.encode(String(value) + "\n");
+            const data = new TextEncoder().encode(
+                String(value) + "\n"
+            );
 
-            const properties = uartCharacteristic.properties;
+            const characteristic = uartCharacteristic;
+            const properties = characteristic.properties;
 
-            // Méthode 1 : écriture sans réponse
+            // Ecriture sans réponse
             if (
                 properties.writeWithoutResponse &&
-                typeof uartCharacteristic.writeValueWithoutResponse === "function"
+                typeof characteristic.writeValueWithoutResponse === "function"
             ) {
 
-                await uartCharacteristic.writeValueWithoutResponse(data);
+                await characteristic.writeValueWithoutResponse(data);
 
             }
 
-            // Méthode 2 : écriture avec réponse
+            // Ecriture avec réponse
             else if (
                 properties.write &&
-                typeof uartCharacteristic.writeValueWithResponse === "function"
+                typeof characteristic.writeValueWithResponse === "function"
             ) {
 
-                await uartCharacteristic.writeValueWithResponse(data);
+                await characteristic.writeValueWithResponse(data);
 
             }
 
-            // Méthode 3 : compatibilité avec les anciens navigateurs
+            // Ancienne méthode compatible
             else if (
-                typeof uartCharacteristic.writeValue === "function"
+                typeof characteristic.writeValue === "function"
             ) {
 
-                await uartCharacteristic.writeValue(data);
+                await characteristic.writeValue(data);
 
             }
 
             else {
 
                 throw new Error(
-                    "Aucune méthode d'écriture Bluetooth disponible dans ce navigateur."
+                    "Aucune méthode d'écriture Bluetooth disponible."
                 );
 
             }
@@ -325,105 +751,96 @@ async function sendAngle(angle) {
 
         } catch (error) {
 
-            console.error("Erreur d'envoi Bluetooth :", error);
-            console.error(
-                "Propriétés de la caractéristique :",
-                uartCharacteristic ? uartCharacteristic.properties : null
-            );
+            console.error("Erreur Bluetooth :", error);
 
-            setStatus(
-                "Erreur d'envoi (" + error.name + ") : " + error.message,
-                "#d94343"
-            );
+            if (uartCharacteristic) {
+
+                setStatus(
+                    "Erreur d'envoi : " + error.message,
+                    "#d94343"
+                );
+
+            }
 
             pendingAngle = null;
             break;
+
         }
+
     }
 
     sending = false;
+
 }
 
-// Calcul de la position du joystick
-function handleMove(clientX) {
 
-    if (!isDragging) return;
+// --------------------------------------
+// COMMANDE PAR LE CURSEUR
+// --------------------------------------
 
-    const rect = container.getBoundingClientRect();
+angleSlider.addEventListener("input", () => {
 
-    const centerX = rect.left + rect.width / 2;
+    const angle = Number(angleSlider.value);
 
-    let deltaX = clientX - centerX;
+    updateAngleDisplay(angle);
 
-    deltaX = Math.max(
-        -maxDelta,
-        Math.min(maxDelta, deltaX)
-    );
+    sendAngle(angle);
 
-    joystick.style.transform =
-        `translate(${deltaX}px, 0px)`;
+});
 
-    // Angle limité entre 50° et 130°
-    currentAngle = Math.round(
-        90 + (deltaX / maxDelta) * 40
-    );
 
-    currentAngle = Math.max(
-        50,
-        Math.min(130, currentAngle)
-    );
+// --------------------------------------
+// BOUTONS DE REGLAGE
+// --------------------------------------
 
-    angleValue.textContent = currentAngle;
-
-    sendAngle(currentAngle);
-}
-
-// Déplacement tactile ou souris
-container.addEventListener("pointerdown", (event) => {
+function changeAngle(increment) {
 
     if (!uartCharacteristic) return;
 
-    isDragging = true;
+    const newAngle = currentAngle + increment;
 
-    container.setPointerCapture(event.pointerId);
+    updateAngleDisplay(newAngle);
 
-    handleMove(event.clientX);
+    sendAngle(currentAngle);
+
+}
+
+
+minus5.addEventListener("click", () => {
+    changeAngle(-5);
 });
 
-container.addEventListener("pointermove", (event) => {
-
-    if (!isDragging) return;
-
-    handleMove(event.clientX);
+plus5.addEventListener("click", () => {
+    changeAngle(5);
 });
 
-// Retour au centre lors du relâchement
-function releaseJoystick() {
+minus1.addEventListener("click", () => {
+    changeAngle(-1);
+});
 
-    if (!isDragging) return;
+plus1.addEventListener("click", () => {
+    changeAngle(1);
+});
 
-    isDragging = false;
 
-    resetJoystick();
+// --------------------------------------
+// RETOUR AU CENTRE
+// --------------------------------------
+
+centerBtn.addEventListener("click", () => {
+
+    if (!uartCharacteristic) return;
+
+    updateAngleDisplay(90);
 
     sendAngle(90);
-}
 
-container.addEventListener("pointerup", releaseJoystick);
+});
 
-container.addEventListener("pointercancel", releaseJoystick);
 
-// Réinitialisation du joystick
-function resetJoystick() {
-
-    isDragging = false;
-
-    joystick.style.transform = "translate(0px, 0px)";
-
-    currentAngle = 90;
-
-    angleValue.textContent = 90;
-}
+// Initialisation
+setControlsEnabled(false);
+updateAngleDisplay(90);
 
 </script>
 
