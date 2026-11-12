@@ -155,7 +155,7 @@ let currentAngle = 90;
 
 const maxDelta = 65;
 
-// File d'attente des messages Bluetooth
+// File d'attente Bluetooth
 let pendingAngle = null;
 let sending = false;
 let lastSentAngle = null;
@@ -170,7 +170,10 @@ function setStatus(message, color) {
 connectBtn.addEventListener("click", async () => {
 
     if (!navigator.bluetooth) {
-        setStatus("Bluetooth non compatible avec ce navigateur", "#d94343");
+        setStatus(
+            "Bluetooth non compatible avec ce navigateur",
+            "#d94343"
+        );
         return;
     }
 
@@ -205,17 +208,26 @@ connectBtn.addEventListener("click", async () => {
         disconnectBtn.style.display = "inline-block";
         container.classList.remove("disabled");
 
+        // Réinitialisation des commandes
+        pendingAngle = null;
+        lastSentAngle = null;
+        currentAngle = 90;
+
         // Position initiale
         await sendAngle(90);
 
     } catch (error) {
         console.error(error);
-        setStatus("Échec de connexion : " + error.message, "#d94343");
+        setStatus(
+            "Échec de connexion : " + error.message,
+            "#d94343"
+        );
     }
 });
 
 // Déconnexion
 disconnectBtn.addEventListener("click", () => {
+
     if (bluetoothDevice && bluetoothDevice.gatt.connected) {
         bluetoothDevice.gatt.disconnect();
     }
@@ -223,6 +235,7 @@ disconnectBtn.addEventListener("click", () => {
 
 // Gestion de la déconnexion
 function handleDisconnect() {
+
     uartCharacteristic = null;
     pendingAngle = null;
     sending = false;
@@ -243,6 +256,9 @@ async function sendAngle(angle) {
 
     if (!uartCharacteristic) return;
 
+    // Limitation de sécurité
+    angle = Math.max(50, Math.min(130, Math.round(angle)));
+
     pendingAngle = angle;
 
     if (sending) return;
@@ -258,16 +274,33 @@ async function sendAngle(angle) {
 
         try {
             const encoder = new TextEncoder();
+            const data = encoder.encode(String(value) + "\n");
 
-            await uartCharacteristic.writeValue(
-                encoder.encode(String(value) + "\n")
-            );
+            if (uartCharacteristic.properties.writeWithoutResponse) {
+
+                await uartCharacteristic.writeValueWithoutResponse(data);
+
+            } else if (uartCharacteristic.properties.write) {
+
+                await uartCharacteristic.writeValueWithResponse(data);
+
+            } else {
+
+                throw new Error("Écriture Bluetooth non disponible");
+            }
 
             lastSentAngle = value;
 
         } catch (error) {
+
             console.error("Erreur d'envoi :", error);
-            setStatus("Erreur de communication", "#d94343");
+
+            setStatus(
+                "Erreur Bluetooth : " + error.message,
+                "#d94343"
+            );
+
+            pendingAngle = null;
             break;
         }
     }
@@ -286,16 +319,23 @@ function handleMove(clientX) {
 
     let deltaX = clientX - centerX;
 
-    deltaX = Math.max(-maxDelta, Math.min(maxDelta, deltaX));
+    deltaX = Math.max(
+        -maxDelta,
+        Math.min(maxDelta, deltaX)
+    );
 
     joystick.style.transform =
         `translate(${deltaX}px, 0px)`;
 
+    // Angle limité entre 50° et 130°
     currentAngle = Math.round(
-        90 + (deltaX / maxDelta) * 90
+        90 + (deltaX / maxDelta) * 40
     );
 
-    currentAngle = Math.max(0, Math.min(180, currentAngle));
+    currentAngle = Math.max(
+        50,
+        Math.min(130, currentAngle)
+    );
 
     angleValue.textContent = currentAngle;
 
@@ -321,7 +361,7 @@ container.addEventListener("pointermove", (event) => {
     handleMove(event.clientX);
 });
 
-// Relâchement du joystick
+// Retour au centre lors du relâchement
 function releaseJoystick() {
 
     if (!isDragging) return;
@@ -330,19 +370,22 @@ function releaseJoystick() {
 
     resetJoystick();
 
-    currentAngle = 90;
-    angleValue.textContent = 90;
-
     sendAngle(90);
 }
 
 container.addEventListener("pointerup", releaseJoystick);
+
 container.addEventListener("pointercancel", releaseJoystick);
 
+// Réinitialisation du joystick
 function resetJoystick() {
+
     isDragging = false;
+
     joystick.style.transform = "translate(0px, 0px)";
+
     currentAngle = 90;
+
     angleValue.textContent = 90;
 }
 
@@ -350,4 +393,5 @@ function resetJoystick() {
 
 </body>
 </html>
+
 
