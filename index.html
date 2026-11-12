@@ -202,6 +202,10 @@ connectBtn.addEventListener("click", async () => {
             UART_RX_UUID
         );
 
+        // Informations utiles pour le diagnostic
+        console.log("Caractéristique UART RX :", uartCharacteristic);
+        console.log("Propriétés Bluetooth :", uartCharacteristic.properties);
+
         setStatus("Connecté !", "#219653");
 
         connectBtn.style.display = "none";
@@ -218,6 +222,7 @@ connectBtn.addEventListener("click", async () => {
 
     } catch (error) {
         console.error(error);
+
         setStatus(
             "Échec de connexion : " + error.message,
             "#d94343"
@@ -251,7 +256,7 @@ function handleDisconnect() {
     resetJoystick();
 }
 
-// Envoi des angles en Bluetooth
+// ENVOI DES ANGLES EN BLUETOOTH
 async function sendAngle(angle) {
 
     if (!uartCharacteristic) return;
@@ -273,30 +278,61 @@ async function sendAngle(angle) {
         if (value === lastSentAngle) continue;
 
         try {
+
             const encoder = new TextEncoder();
             const data = encoder.encode(String(value) + "\n");
 
-            if (uartCharacteristic.properties.writeWithoutResponse) {
+            const properties = uartCharacteristic.properties;
+
+            // Méthode 1 : écriture sans réponse
+            if (
+                properties.writeWithoutResponse &&
+                typeof uartCharacteristic.writeValueWithoutResponse === "function"
+            ) {
 
                 await uartCharacteristic.writeValueWithoutResponse(data);
 
-            } else if (uartCharacteristic.properties.write) {
+            }
+
+            // Méthode 2 : écriture avec réponse
+            else if (
+                properties.write &&
+                typeof uartCharacteristic.writeValueWithResponse === "function"
+            ) {
 
                 await uartCharacteristic.writeValueWithResponse(data);
 
-            } else {
+            }
 
-                throw new Error("Écriture Bluetooth non disponible");
+            // Méthode 3 : compatibilité avec les anciens navigateurs
+            else if (
+                typeof uartCharacteristic.writeValue === "function"
+            ) {
+
+                await uartCharacteristic.writeValue(data);
+
+            }
+
+            else {
+
+                throw new Error(
+                    "Aucune méthode d'écriture Bluetooth disponible dans ce navigateur."
+                );
+
             }
 
             lastSentAngle = value;
 
         } catch (error) {
 
-            console.error("Erreur d'envoi :", error);
+            console.error("Erreur d'envoi Bluetooth :", error);
+            console.error(
+                "Propriétés de la caractéristique :",
+                uartCharacteristic ? uartCharacteristic.properties : null
+            );
 
             setStatus(
-                "Erreur Bluetooth : " + error.message,
+                "Erreur d'envoi (" + error.name + ") : " + error.message,
                 "#d94343"
             );
 
@@ -393,5 +429,3 @@ function resetJoystick() {
 
 </body>
 </html>
-
-
