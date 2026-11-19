@@ -1,53 +1,68 @@
 
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#eaf3f8">
-
-<title>Télécommande du bateau</title>
+<meta name="theme-color" content="#102c43">
+<title>Marine Control - Bateau</title>
 
 <style>
+:root {
+    --navy: #102c43;
+    --blue: #1682bd;
+    --blue-light: #eaf4fa;
+    --green: #159b80;
+    --red: #d94343;
+    --text: #263746;
+    --muted: #728493;
+    --motor-color: #159b80;
+}
 
 * {
     box-sizing: border-box;
 }
 
 body {
-    font-family: Arial, sans-serif;
     margin: 0;
-    padding: 16px;
-    background: #eaf3f8;
-    color: #263746;
+    padding: 14px;
+    font-family: Arial, sans-serif;
+    background: #eaf1f6;
+    color: var(--text);
 }
 
 button {
+    border: none;
     font-family: inherit;
     cursor: pointer;
-    border: none;
 }
 
-.topbar {
+button:disabled,
+input:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+header {
     max-width: 1100px;
-    margin: 0 auto 15px;
+    margin: 0 auto 14px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 15px;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 h1 {
-    color: #12649a;
-    font-size: 25px;
-    margin: 0 0 5px;
+    margin: 0;
+    color: var(--navy);
+    font-size: 23px;
 }
 
 .subtitle {
-    color: #607786;
-    font-size: 13px;
-    margin: 0;
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--muted);
 }
 
 .connection {
@@ -55,407 +70,482 @@ h1 {
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
-    justify-content: flex-end;
 }
 
 #status {
+    background: white;
+    border-radius: 8px;
+    padding: 9px 12px;
     font-size: 12px;
     font-weight: bold;
-    color: #d94343;
-    background: white;
-    padding: 10px;
-    border-radius: 8px;
+    color: var(--red);
 }
 
-#connectBtn,
-#disconnectBtn {
-    padding: 11px 15px;
+#connectBtn, #disconnectBtn {
     border-radius: 8px;
     color: white;
-    font-size: 13px;
+    padding: 11px 15px;
     font-weight: bold;
-}
-
-#connectBtn {
-    background: #087dcc;
+    background: var(--blue);
 }
 
 #disconnectBtn {
-    background: #d94343;
+    background: var(--red);
     display: none;
 }
 
-.layout {
+.dashboard {
     max-width: 1100px;
     margin: auto;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: 14px;
 }
 
 .panel {
     background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 3px 12px #0000000d;
+    border-radius: 17px;
+    padding: 19px;
+    box-shadow: 0 4px 16px #102c4310;
 }
 
-.panel h2 {
-    font-size: 17px;
-    color: #12649a;
-    margin: 0 0 18px;
+.panel-title {
+    margin: 0 0 16px;
+    color: var(--navy);
+    font-size: 16px;
+    letter-spacing: .5px;
 }
 
-.angle-number {
+.angle-number, .throttle-number {
     text-align: center;
-    font-size: 56px;
+    font-size: 52px;
     font-weight: bold;
-    color: #087dcc;
-    margin: 5px 0;
+    margin: 4px 0;
+    color: var(--blue);
+    font-variant-numeric: tabular-nums;
 }
 
-.angle-description {
+.description {
+    color: var(--muted);
     text-align: center;
-    color: #607786;
-    font-size: 13px;
-    margin-bottom: 24px;
+    font-size: 12px;
+    margin: 4px 0 20px;
 }
 
-.range-container {
-    padding: 10px 3px;
-}
+/* BARRE */
 
-input[type="range"] {
+#angleSlider {
     width: 100%;
-    height: 12px;
+    accent-color: var(--blue);
     cursor: pointer;
-    accent-color: #087dcc;
+    height: 12px;
     touch-action: pan-y;
 }
 
 .scale {
     display: flex;
     justify-content: space-between;
-    color: #607786;
-    font-size: 12px;
-    margin-top: 12px;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 9px;
 }
 
-.direction {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 18px;
-    gap: 8px;
+.fine-title {
+    margin: 20px 0 10px;
+    font-size: 13px;
+    color: var(--navy);
+    font-weight: bold;
 }
 
-.direction span {
-    background: #eaf3f8;
-    padding: 9px;
-    border-radius: 7px;
-    text-align: center;
-    font-size: 12px;
-    flex: 1;
-}
-
-.controls-grid {
+.fine-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
 }
 
-.control-btn {
-    padding: 20px 10px;
+.fine-btn {
+    background: var(--blue-light);
+    color: #12649a;
+    border-radius: 10px;
+    padding: 13px 8px;
     font-size: 20px;
     font-weight: bold;
-    color: #12649a;
-    background: #eaf3f8;
-    border-radius: 12px;
-    transition: background 0.15s;
 }
 
-.control-btn:active {
-    background: #b8d8eb;
-}
-
-.control-btn small {
+.fine-btn small {
     display: block;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: normal;
-    margin-top: 5px;
+    margin-top: 3px;
 }
 
 .center-btn {
-    grid-column: span 2;
-    background: #087dcc;
+    margin-top: 11px;
+    background: var(--blue);
     color: white;
-    padding: 18px;
-    font-size: 16px;
+    width: 100%;
+    border-radius: 10px;
+    padding: 14px;
+    font-weight: bold;
 }
 
-.center-btn:active {
-    background: #075b99;
+/* PROPULSION */
+
+.throttle-number {
+    color: var(--motor-color);
 }
 
-button:disabled,
-input:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
+.throttle-layout {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    min-height: 230px;
 }
 
-.info {
-    max-width: 1100px;
-    margin: 15px auto 0;
+.vertical-slider {
+    writing-mode: vertical-lr;
+    direction: rtl;
+    width: 38px;
+    height: 220px;
+    cursor: pointer;
+    accent-color: var(--motor-color);
+    touch-action: pan-x;
+}
+
+.vertical-scale {
+    height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.direction-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-top: 16px;
+}
+
+.direction-btn {
+    padding: 14px 8px;
+    border-radius: 10px;
+    background: #edf2f5;
+    color: #536575;
+    font-weight: bold;
+    border: 2px solid transparent;
+}
+
+.direction-btn.active {
+    color: white;
+    background: var(--green);
+    border-color: var(--green);
+}
+
+.direction-btn.reverse.active {
+    background: #d68b00;
+    border-color: #d68b00;
+}
+
+#directionLabel {
     text-align: center;
-    color: #607786;
-    font-size: 12px;
+    color: var(--motor-color);
+    font-size: 13px;
+    font-weight: bold;
+    margin: 10px 0 0;
 }
 
-/* MODE PAYSAGE */
+.stop-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 17px;
+    border-radius: 11px;
+    background: var(--red);
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+    box-shadow: 0 3px 8px #d9434330;
+}
+
+.stop-btn:active {
+    background: #ad2929;
+}
+
+#propulsionHint {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 10px;
+    min-height: 14px;
+}
+
+.footer {
+    max-width: 1100px;
+    margin: 12px auto 0;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+}
+
+/* PAYSAGE */
 
 @media (orientation: landscape) and (min-width: 600px) {
 
     body {
-        padding: 12px 20px;
+        padding: 10px 20px;
     }
 
-    .layout {
-        grid-template-columns: 1.4fr 0.85fr;
+    .dashboard {
+        grid-template-columns: 1.15fr .85fr;
         align-items: stretch;
     }
 
     .panel {
-        min-height: 280px;
-        padding: 22px;
+        padding: 18px 22px;
     }
 
-    .angle-number {
-        font-size: 64px;
-        margin: 8px 0;
+    .angle-number, .throttle-number {
+        font-size: 48px;
     }
 
-    .range-container {
-        margin-top: 25px;
+    .throttle-layout {
+        min-height: 205px;
     }
 
-    .controls-grid {
-        gap: 15px;
-    }
-
-    .control-btn {
-        padding: 22px 8px;
+    .vertical-slider, .vertical-scale {
+        height: 195px;
     }
 }
-
-/* PETIT ÉCRAN EN PAYSAGE */
 
 @media (orientation: landscape) and (max-height: 500px) {
 
     body {
-        padding: 7px 14px;
+        padding: 6px 14px;
     }
 
-    .topbar {
-        margin-bottom: 8px;
+    header {
+        margin-bottom: 7px;
     }
 
     h1 {
-        font-size: 19px;
+        font-size: 18px;
+    }
+
+    .subtitle {
+        display: none;
     }
 
     .panel {
-        padding: 12px 18px;
-        min-height: 0;
+        padding: 10px 17px;
     }
 
-    .panel h2 {
-        margin-bottom: 8px;
+    .panel-title {
+        margin-bottom: 6px;
     }
 
-    .angle-number {
-        font-size: 42px;
+    .angle-number, .throttle-number {
+        font-size: 35px;
         margin: 0;
     }
 
-    .angle-description {
-        margin-bottom: 8px;
+    .description {
+        margin: 2px 0 8px;
     }
 
-    .range-container {
-        margin-top: 8px;
+    .fine-title {
+        margin: 9px 0 6px;
     }
 
-    .control-btn {
-        padding: 12px 8px;
-        font-size: 17px;
+    .fine-btn {
+        padding: 8px;
     }
 
     .center-btn {
-        padding: 12px;
-    }
-
-    .info {
         margin-top: 7px;
+        padding: 10px;
+    }
+
+    .throttle-layout {
+        min-height: 150px;
+    }
+
+    .vertical-slider, .vertical-scale {
+        height: 145px;
+    }
+
+    .stop-btn {
+        margin-top: 8px;
+        padding: 10px;
+    }
+
+    .direction-buttons {
+        margin-top: 6px;
     }
 }
-
-@media (max-width: 360px) {
-
-    .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .connection {
-        justify-content: flex-start;
-    }
-
-}
-
 </style>
 </head>
 
 <body>
 
-<header class="topbar">
-
+<header>
     <div>
-        <h1>🚤 Télécommande du bateau</h1>
-        <p class="subtitle">Pilotage Bluetooth de la barre</p>
+        <h1>🚤 MARINE CONTROL</h1>
+        <p class="subtitle">Commande Bluetooth du bateau</p>
     </div>
 
     <div class="connection">
-
         <div id="status">Déconnecté</div>
-
-        <button id="connectBtn">
-            Connecter
-        </button>
-
-        <button id="disconnectBtn">
-            Déconnecter
-        </button>
-
+        <button id="connectBtn">Connecter</button>
+        <button id="disconnectBtn">Déconnecter</button>
     </div>
-
 </header>
 
+<main class="dashboard">
 
-<main class="layout">
-
-    <!-- COMMANDE PRINCIPALE -->
+    <!-- DIRECTION -->
 
     <section class="panel">
 
-        <h2>Commande de direction</h2>
+        <h2 class="panel-title">⚓ DIRECTION</h2>
 
         <div class="angle-number">
             <span id="angleValue">90</span>°
         </div>
 
-        <div class="angle-description" id="angleDescription">
+        <div class="description" id="angleDescription">
             Position centrale
         </div>
 
-        <div class="range-container">
+        <input
+            type="range"
+            id="angleSlider"
+            min="50"
+            max="130"
+            step="1"
+            value="90"
+            disabled
+        >
 
-            <input
-                type="range"
-                id="angleSlider"
-                min="50"
-                max="130"
-                step="1"
-                value="90"
-                disabled
-            >
-
-            <div class="scale">
-                <span>50°</span>
-                <span>70°</span>
-                <span>90°</span>
-                <span>110°</span>
-                <span>130°</span>
-            </div>
-
+        <div class="scale">
+            <span>50° Gauche</span>
+            <span>90° Centre</span>
+            <span>130° Droite</span>
         </div>
 
-        <div class="direction">
-            <span>← Gauche</span>
-            <span>Centre</span>
-            <span>Droite →</span>
-        </div>
+        <div class="fine-title">RÉGLAGE PRÉCIS</div>
 
-    </section>
-
-
-    <!-- COMMANDES DE PRECISION -->
-
-    <section class="panel">
-
-        <h2>Réglage précis</h2>
-
-        <div class="controls-grid">
-
-            <button
-                class="control-btn"
-                id="minus5"
-                disabled
-            >
+        <div class="fine-grid">
+            <button class="fine-btn" id="minus5" disabled>
                 −5°
                 <small>Correction rapide</small>
             </button>
 
-            <button
-                class="control-btn"
-                id="plus5"
-                disabled
-            >
+            <button class="fine-btn" id="plus5" disabled>
                 +5°
                 <small>Correction rapide</small>
             </button>
 
-            <button
-                class="control-btn"
-                id="minus1"
-                disabled
-            >
+            <button class="fine-btn" id="minus1" disabled>
                 −1°
                 <small>Réglage fin</small>
             </button>
 
-            <button
-                class="control-btn"
-                id="plus1"
-                disabled
-            >
+            <button class="fine-btn" id="plus1" disabled>
                 +1°
                 <small>Réglage fin</small>
             </button>
+        </div>
 
-            <button
-                class="control-btn center-btn"
-                id="centerBtn"
+        <button class="center-btn" id="centerBtn" disabled>
+            ⊙ RETOUR AU CENTRE : 90°
+        </button>
+
+    </section>
+
+
+    <!-- PROPULSION -->
+
+    <section class="panel">
+
+        <h2 class="panel-title">⚡ PROPULSION</h2>
+
+        <div class="throttle-number">
+            <span id="throttleValue">0</span>%
+        </div>
+
+        <div class="description">
+            Puissance demandée
+        </div>
+
+        <div class="throttle-layout">
+
+            <div class="vertical-scale">
+                <span>100%</span>
+                <span>75%</span>
+                <span>50%</span>
+                <span>25%</span>
+                <span>0%</span>
+            </div>
+
+            <input
+                type="range"
+                id="throttleSlider"
+                class="vertical-slider"
+                min="0"
+                max="100"
+                step="1"
+                value="0"
                 disabled
             >
-                ⊙ RETOUR AU CENTRE : 90°
+
+        </div>
+
+        <div id="directionLabel">MARCHE AVANT</div>
+
+        <div class="direction-buttons">
+
+            <button
+                class="direction-btn active"
+                id="forwardBtn"
+                disabled
+            >
+                ↑ AVANT
             </button>
 
+            <button
+                class="direction-btn reverse"
+                id="reverseBtn"
+                disabled
+            >
+                ↓ ARRIÈRE
+            </button>
+
+        </div>
+
+        <button class="stop-btn" id="stopBtn" disabled>
+            ■ STOP PROPULSION
+        </button>
+
+        <div id="propulsionHint">
+            Puissance à 0 % au démarrage
         </div>
 
     </section>
 
 </main>
 
-<div class="info">
-    Déplace le curseur pour diriger le bateau.
-    Utilise les boutons pour ajuster précisément la barre.
+<div class="footer">
+    Direction : 50° à 130° · Propulsion : 0 à 100 %
 </div>
 
 
 <script>
 
-// --------------------------------------
-// ELEMENTS DE LA PAGE
-// --------------------------------------
+// --------------------------------
+// ÉLÉMENTS HTML
+// --------------------------------
 
 const connectBtn = document.getElementById("connectBtn");
 const disconnectBtn = document.getElementById("disconnectBtn");
@@ -465,21 +555,34 @@ const angleSlider = document.getElementById("angleSlider");
 const angleValue = document.getElementById("angleValue");
 const angleDescription = document.getElementById("angleDescription");
 
-const minus5 = document.getElementById("minus5");
-const plus5 = document.getElementById("plus5");
-const minus1 = document.getElementById("minus1");
-const plus1 = document.getElementById("plus1");
-const centerBtn = document.getElementById("centerBtn");
+const throttleSlider = document.getElementById("throttleSlider");
+const throttleValue = document.getElementById("throttleValue");
+const directionLabel = document.getElementById("directionLabel");
+const propulsionHint = document.getElementById("propulsionHint");
+
+const forwardBtn = document.getElementById("forwardBtn");
+const reverseBtn = document.getElementById("reverseBtn");
+const stopBtn = document.getElementById("stopBtn");
+
+const fineButtons = [
+    document.getElementById("minus5"),
+    document.getElementById("plus5"),
+    document.getElementById("minus1"),
+    document.getElementById("plus1"),
+    document.getElementById("centerBtn")
+];
 
 
-// --------------------------------------
+// --------------------------------
 // BLUETOOTH UART
-// --------------------------------------
+// --------------------------------
+
+// On conserve les identifiants de la version
+// de la télécommande dont la connexion fonctionne.
 
 const UART_SERVICE_UUID =
 "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 
-// IMPORTANT : RX de la micro:bit = écriture depuis la page
 const UART_RX_UUID =
 "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
@@ -487,51 +590,55 @@ let bluetoothDevice = null;
 let uartCharacteristic = null;
 
 
-// --------------------------------------
+// --------------------------------
 // VARIABLES
-// --------------------------------------
+// --------------------------------
 
 let currentAngle = 90;
+let propulsionPercent = 0;
 
-let pendingAngle = null;
+// F = avant, R = arrière
+let selectedDirection = "F";
+
+// Une file commune évite les écritures Bluetooth
+// simultanées entre direction et propulsion.
+let pendingSteering = null;
+let pendingPropulsion = null;
 let sending = false;
-let lastSentAngle = null;
 
 
-// --------------------------------------
-// AFFICHAGE DU STATUT
-// --------------------------------------
+// --------------------------------
+// STATUT
+// --------------------------------
 
 function setStatus(message, color) {
-
     statusDiv.textContent = message;
     statusDiv.style.color = color;
-
 }
 
 
-// --------------------------------------
+// --------------------------------
 // ACTIVATION DES COMMANDES
-// --------------------------------------
+// --------------------------------
 
 function setControlsEnabled(enabled) {
 
     angleSlider.disabled = !enabled;
+    throttleSlider.disabled = !enabled;
 
-    minus5.disabled = !enabled;
-    plus5.disabled = !enabled;
+    fineButtons.forEach(button => {
+        button.disabled = !enabled;
+    });
 
-    minus1.disabled = !enabled;
-    plus1.disabled = !enabled;
-
-    centerBtn.disabled = !enabled;
-
+    forwardBtn.disabled = !enabled;
+    reverseBtn.disabled = !enabled;
+    stopBtn.disabled = !enabled;
 }
 
 
-// --------------------------------------
-// MISE A JOUR DE L'ANGLE
-// --------------------------------------
+// --------------------------------
+// AFFICHAGE DE LA BARRE
+// --------------------------------
 
 function updateAngleDisplay(angle) {
 
@@ -544,37 +651,352 @@ function updateAngleDisplay(angle) {
     angleValue.textContent = currentAngle;
 
     if (currentAngle < 90) {
-
-        angleDescription.textContent = "Commande vers la gauche";
-
+        angleDescription.textContent = "Direction vers la gauche";
     } else if (currentAngle > 90) {
-
-        angleDescription.textContent = "Commande vers la droite";
-
+        angleDescription.textContent = "Direction vers la droite";
     } else {
-
         angleDescription.textContent = "Position centrale";
-
     }
-
 }
 
 
-// --------------------------------------
+// --------------------------------
+// AFFICHAGE DE LA PROPULSION
+// --------------------------------
+
+function updateThrottleDisplay(percent) {
+
+    propulsionPercent = Math.max(
+        0,
+        Math.min(100, Math.round(percent))
+    );
+
+    throttleSlider.value = propulsionPercent;
+    throttleValue.textContent = propulsionPercent;
+
+    let color;
+
+    if (propulsionPercent <= 35) {
+        color = "#159b80";
+    } else if (propulsionPercent <= 70) {
+        color = "#1682bd";
+    } else {
+        color = "#e38b18";
+    }
+
+    document.documentElement.style.setProperty(
+        "--motor-color",
+        color
+    );
+
+    directionLabel.textContent =
+        selectedDirection === "F"
+        ? "MARCHE AVANT"
+        : "MARCHE ARRIÈRE";
+}
+
+
+// --------------------------------
+// SÉLECTION DU SENS
+// --------------------------------
+
+function updateDirectionButtons() {
+
+    forwardBtn.classList.toggle(
+        "active",
+        selectedDirection === "F"
+    );
+
+    reverseBtn.classList.toggle(
+        "active",
+        selectedDirection === "R"
+    );
+
+    directionLabel.textContent =
+        selectedDirection === "F"
+        ? "MARCHE AVANT"
+        : "MARCHE ARRIÈRE";
+}
+
+function chooseDirection(direction) {
+
+    // Sécurité : changement de sens uniquement à 0 %.
+    if (propulsionPercent > 0) {
+
+        propulsionHint.textContent =
+            "Ramène d'abord la puissance à 0 % pour changer de sens.";
+
+        return;
+    }
+
+    selectedDirection = direction;
+
+    updateDirectionButtons();
+
+    propulsionHint.textContent =
+        direction === "F"
+        ? "Marche avant sélectionnée"
+        : "Marche arrière sélectionnée";
+}
+
+forwardBtn.addEventListener("click", () => {
+    chooseDirection("F");
+});
+
+reverseBtn.addEventListener("click", () => {
+    chooseDirection("R");
+});
+
+
+// --------------------------------
+// ÉCRITURE BLUETOOTH
+// --------------------------------
+
+async function writeBluetoothLine(line) {
+
+    if (!uartCharacteristic) return;
+
+    const data = new TextEncoder().encode(line + "\n");
+
+    const characteristic = uartCharacteristic;
+    const properties = characteristic.properties;
+
+    // Méthode d'écriture sans réponse
+    if (
+        properties.writeWithoutResponse &&
+        typeof characteristic.writeValueWithoutResponse === "function"
+    ) {
+
+        await characteristic.writeValueWithoutResponse(data);
+
+    }
+
+    // Méthode d'écriture avec réponse
+    else if (
+        properties.write &&
+        typeof characteristic.writeValueWithResponse === "function"
+    ) {
+
+        await characteristic.writeValueWithResponse(data);
+
+    }
+
+    // Compatibilité avec les anciens navigateurs
+    else if (
+        typeof characteristic.writeValue === "function"
+    ) {
+
+        await characteristic.writeValue(data);
+
+    }
+
+    else {
+
+        throw new Error("Écriture Bluetooth indisponible");
+
+    }
+}
+
+
+// --------------------------------
+// FILE D'ATTENTE BLUETOOTH
+// --------------------------------
+
+async function processBluetoothQueue() {
+
+    if (sending || !uartCharacteristic) return;
+
+    sending = true;
+
+    while (
+        uartCharacteristic &&
+        (pendingSteering !== null || pendingPropulsion !== null)
+    ) {
+
+        let line;
+
+        // Priorité à la direction si les deux commandes
+        // sont en attente.
+        if (pendingSteering !== null) {
+
+            line = pendingSteering;
+            pendingSteering = null;
+
+        } else {
+
+            line = pendingPropulsion;
+            pendingPropulsion = null;
+
+        }
+
+        try {
+
+            await writeBluetoothLine(line);
+
+        } catch (error) {
+
+            console.error("Erreur Bluetooth :", error);
+
+            if (uartCharacteristic) {
+                setStatus(
+                    "Erreur Bluetooth : " + error.message,
+                    "#d94343"
+                );
+            }
+
+            pendingSteering = null;
+            pendingPropulsion = null;
+            break;
+        }
+    }
+
+    sending = false;
+}
+
+
+// --------------------------------
+// ENVOI DE L'ANGLE DE BARRE
+// --------------------------------
+
+function sendAngle(angle) {
+
+    if (!uartCharacteristic) return;
+
+    angle = Math.max(
+        50,
+        Math.min(130, Math.round(angle))
+    );
+
+    pendingSteering = String(angle);
+
+    processBluetoothQueue();
+}
+
+
+// --------------------------------
+// ENVOI DE LA PROPULSION
+// --------------------------------
+
+function sendPropulsion(percent) {
+
+    if (!uartCharacteristic) return;
+
+    percent = Math.max(
+        0,
+        Math.min(100, Math.round(percent))
+    );
+
+    let command;
+
+    if (percent === 0) {
+
+        command = "P0";
+
+    } else {
+
+        command = selectedDirection + String(percent);
+
+    }
+
+    pendingPropulsion = command;
+
+    processBluetoothQueue();
+}
+
+
+// --------------------------------
+// CURSEUR DE BARRE
+// --------------------------------
+
+angleSlider.addEventListener("input", () => {
+
+    updateAngleDisplay(Number(angleSlider.value));
+
+    sendAngle(currentAngle);
+
+});
+
+
+// --------------------------------
+// BOUTONS DE RÉGLAGE FIN
+// --------------------------------
+
+function changeAngle(increment) {
+
+    if (!uartCharacteristic) return;
+
+    updateAngleDisplay(currentAngle + increment);
+
+    sendAngle(currentAngle);
+}
+
+document.getElementById("minus5").addEventListener("click", () => {
+    changeAngle(-5);
+});
+
+document.getElementById("plus5").addEventListener("click", () => {
+    changeAngle(5);
+});
+
+document.getElementById("minus1").addEventListener("click", () => {
+    changeAngle(-1);
+});
+
+document.getElementById("plus1").addEventListener("click", () => {
+    changeAngle(1);
+});
+
+document.getElementById("centerBtn").addEventListener("click", () => {
+
+    if (!uartCharacteristic) return;
+
+    updateAngleDisplay(90);
+
+    sendAngle(90);
+
+});
+
+
+// --------------------------------
+// CURSEUR DE PROPULSION
+// --------------------------------
+
+throttleSlider.addEventListener("input", () => {
+
+    updateThrottleDisplay(Number(throttleSlider.value));
+
+    propulsionHint.textContent = "Puissance en cours de réglage";
+
+    sendPropulsion(propulsionPercent);
+
+});
+
+
+// --------------------------------
+// BOUTON STOP
+// --------------------------------
+
+stopBtn.addEventListener("click", () => {
+
+    updateThrottleDisplay(0);
+
+    propulsionHint.textContent = "Propulsion arrêtée";
+
+    sendPropulsion(0);
+
+});
+
+
+// --------------------------------
 // CONNEXION BLUETOOTH
-// --------------------------------------
+// --------------------------------
 
 connectBtn.addEventListener("click", async () => {
 
     if (!navigator.bluetooth) {
 
-        setStatus(
-            "Bluetooth non compatible",
-            "#d94343"
-        );
-
+        setStatus("Bluetooth non compatible", "#d94343");
         return;
-
     }
 
     try {
@@ -607,61 +1029,64 @@ connectBtn.addEventListener("click", async () => {
         );
 
         console.log(
-            "Caractéristique Bluetooth :",
+            "Bluetooth connecté :",
             uartCharacteristic.properties
         );
 
-        setStatus("Connecté !", "#219653");
+        setStatus("Connecté !", "#159b80");
 
         connectBtn.style.display = "none";
         disconnectBtn.style.display = "inline-block";
 
         setControlsEnabled(true);
 
-        pendingAngle = null;
-        lastSentAngle = null;
+        pendingSteering = null;
+        pendingPropulsion = null;
 
         updateAngleDisplay(90);
 
-        // Envoi de la position centrale
-        await sendAngle(90);
+        selectedDirection = "F";
+        updateDirectionButtons();
+
+        updateThrottleDisplay(0);
+
+        // Commandes initiales
+        sendAngle(90);
+        sendPropulsion(0);
+
+        propulsionHint.textContent = "Prêt à naviguer";
 
     } catch (error) {
 
         console.error(error);
 
         setStatus(
-            "Erreur : " + error.message,
+            "Connexion impossible : " + error.message,
             "#d94343"
         );
 
     }
-
 });
 
 
-// --------------------------------------
-// DECONNEXION
-// --------------------------------------
+// --------------------------------
+// DÉCONNEXION
+// --------------------------------
 
 disconnectBtn.addEventListener("click", () => {
 
     if (bluetoothDevice && bluetoothDevice.gatt.connected) {
-
         bluetoothDevice.gatt.disconnect();
-
     }
 
 });
-
 
 function handleDisconnect() {
 
     uartCharacteristic = null;
 
-    pendingAngle = null;
-    sending = false;
-    lastSentAngle = null;
+    pendingSteering = null;
+    pendingPropulsion = null;
 
     setStatus("Déconnecté", "#d94343");
 
@@ -671,176 +1096,25 @@ function handleDisconnect() {
     setControlsEnabled(false);
 
     updateAngleDisplay(90);
+    updateThrottleDisplay(0);
 
+    propulsionHint.textContent =
+        "Reconnecte la micro:bit pour piloter.";
+
+    // Le programme micro:bit arrête aussi le moteur
+    // à la réception de l'événement de déconnexion.
 }
 
 
-// --------------------------------------
-// ENVOI BLUETOOTH
-// --------------------------------------
+// --------------------------------
+// INITIALISATION
+// --------------------------------
 
-async function sendAngle(angle) {
-
-    if (!uartCharacteristic) return;
-
-    angle = Math.max(
-        50,
-        Math.min(130, Math.round(angle))
-    );
-
-    pendingAngle = angle;
-
-    if (sending) return;
-
-    sending = true;
-
-    while (pendingAngle !== null && uartCharacteristic) {
-
-        const value = pendingAngle;
-        pendingAngle = null;
-
-        if (value === lastSentAngle) continue;
-
-        try {
-
-            const data = new TextEncoder().encode(
-                String(value) + "\n"
-            );
-
-            const characteristic = uartCharacteristic;
-            const properties = characteristic.properties;
-
-            // Ecriture sans réponse
-            if (
-                properties.writeWithoutResponse &&
-                typeof characteristic.writeValueWithoutResponse === "function"
-            ) {
-
-                await characteristic.writeValueWithoutResponse(data);
-
-            }
-
-            // Ecriture avec réponse
-            else if (
-                properties.write &&
-                typeof characteristic.writeValueWithResponse === "function"
-            ) {
-
-                await characteristic.writeValueWithResponse(data);
-
-            }
-
-            // Ancienne méthode compatible
-            else if (
-                typeof characteristic.writeValue === "function"
-            ) {
-
-                await characteristic.writeValue(data);
-
-            }
-
-            else {
-
-                throw new Error(
-                    "Aucune méthode d'écriture Bluetooth disponible."
-                );
-
-            }
-
-            lastSentAngle = value;
-
-        } catch (error) {
-
-            console.error("Erreur Bluetooth :", error);
-
-            if (uartCharacteristic) {
-
-                setStatus(
-                    "Erreur d'envoi : " + error.message,
-                    "#d94343"
-                );
-
-            }
-
-            pendingAngle = null;
-            break;
-
-        }
-
-    }
-
-    sending = false;
-
-}
-
-
-// --------------------------------------
-// COMMANDE PAR LE CURSEUR
-// --------------------------------------
-
-angleSlider.addEventListener("input", () => {
-
-    const angle = Number(angleSlider.value);
-
-    updateAngleDisplay(angle);
-
-    sendAngle(angle);
-
-});
-
-
-// --------------------------------------
-// BOUTONS DE REGLAGE
-// --------------------------------------
-
-function changeAngle(increment) {
-
-    if (!uartCharacteristic) return;
-
-    const newAngle = currentAngle + increment;
-
-    updateAngleDisplay(newAngle);
-
-    sendAngle(currentAngle);
-
-}
-
-
-minus5.addEventListener("click", () => {
-    changeAngle(-5);
-});
-
-plus5.addEventListener("click", () => {
-    changeAngle(5);
-});
-
-minus1.addEventListener("click", () => {
-    changeAngle(-1);
-});
-
-plus1.addEventListener("click", () => {
-    changeAngle(1);
-});
-
-
-// --------------------------------------
-// RETOUR AU CENTRE
-// --------------------------------------
-
-centerBtn.addEventListener("click", () => {
-
-    if (!uartCharacteristic) return;
-
-    updateAngleDisplay(90);
-
-    sendAngle(90);
-
-});
-
-
-// Initialisation
 setControlsEnabled(false);
+
 updateAngleDisplay(90);
+updateThrottleDisplay(0);
+updateDirectionButtons();
 
 </script>
 
