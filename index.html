@@ -5,9 +5,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#102c43">
+
 <title>Marine Control - Bateau</title>
 
 <style>
+
 :root {
     --navy: #102c43;
     --blue: #1682bd;
@@ -132,7 +134,7 @@ h1 {
     margin: 4px 0 20px;
 }
 
-/* BARRE */
+/* DIRECTION */
 
 #angleSlider {
     width: 100%;
@@ -289,7 +291,7 @@ h1 {
     color: var(--muted);
 }
 
-/* PAYSAGE */
+/* FORMAT PAYSAGE */
 
 @media (orientation: landscape) and (min-width: 600px) {
 
@@ -314,10 +316,13 @@ h1 {
         min-height: 205px;
     }
 
-    .vertical-slider, .vertical-scale {
+    .vertical-slider,
+    .vertical-scale {
         height: 195px;
     }
 }
+
+/* PETITS ÉCRANS EN PAYSAGE */
 
 @media (orientation: landscape) and (max-height: 500px) {
 
@@ -371,7 +376,8 @@ h1 {
         min-height: 150px;
     }
 
-    .vertical-slider, .vertical-scale {
+    .vertical-slider,
+    .vertical-scale {
         height: 145px;
     }
 
@@ -384,23 +390,31 @@ h1 {
         margin-top: 6px;
     }
 }
+
 </style>
 </head>
 
 <body>
 
 <header>
+
     <div>
         <h1>🚤 MARINE CONTROL</h1>
         <p class="subtitle">Commande Bluetooth du bateau</p>
     </div>
 
     <div class="connection">
+
         <div id="status">Déconnecté</div>
+
         <button id="connectBtn">Connecter</button>
+
         <button id="disconnectBtn">Déconnecter</button>
+
     </div>
+
 </header>
+
 
 <main class="dashboard">
 
@@ -437,6 +451,7 @@ h1 {
         <div class="fine-title">RÉGLAGE PRÉCIS</div>
 
         <div class="fine-grid">
+
             <button class="fine-btn" id="minus5" disabled>
                 −5°
                 <small>Correction rapide</small>
@@ -456,6 +471,7 @@ h1 {
                 +1°
                 <small>Réglage fin</small>
             </button>
+
         </div>
 
         <button class="center-btn" id="centerBtn" disabled>
@@ -543,9 +559,9 @@ h1 {
 
 <script>
 
-// --------------------------------
+// ==================================
 // ÉLÉMENTS HTML
-// --------------------------------
+// ==================================
 
 const connectBtn = document.getElementById("connectBtn");
 const disconnectBtn = document.getElementById("disconnectBtn");
@@ -573,12 +589,9 @@ const fineButtons = [
 ];
 
 
-// --------------------------------
+// ==================================
 // BLUETOOTH UART
-// --------------------------------
-
-// On conserve les identifiants de la version
-// de la télécommande dont la connexion fonctionne.
+// ==================================
 
 const UART_SERVICE_UUID =
 "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
@@ -590,36 +603,43 @@ let bluetoothDevice = null;
 let uartCharacteristic = null;
 
 
-// --------------------------------
-// VARIABLES
-// --------------------------------
+// ==================================
+// VARIABLES DE COMMANDE
+// ==================================
 
 let currentAngle = 90;
 let propulsionPercent = 0;
 
-// F = avant, R = arrière
 let selectedDirection = "F";
 
-// Une file commune évite les écritures Bluetooth
-// simultanées entre direction et propulsion.
+
+// ==================================
+// FILE D'ATTENTE BLUETOOTH
+// ==================================
+
 let pendingSteering = null;
 let pendingPropulsion = null;
+let pendingHeartbeat = false;
+
 let sending = false;
+let heartbeatTimer = null;
 
 
-// --------------------------------
+// ==================================
 // STATUT
-// --------------------------------
+// ==================================
 
 function setStatus(message, color) {
+
     statusDiv.textContent = message;
     statusDiv.style.color = color;
+
 }
 
 
-// --------------------------------
+// ==================================
 // ACTIVATION DES COMMANDES
-// --------------------------------
+// ==================================
 
 function setControlsEnabled(enabled) {
 
@@ -633,12 +653,13 @@ function setControlsEnabled(enabled) {
     forwardBtn.disabled = !enabled;
     reverseBtn.disabled = !enabled;
     stopBtn.disabled = !enabled;
+
 }
 
 
-// --------------------------------
+// ==================================
 // AFFICHAGE DE LA BARRE
-// --------------------------------
+// ==================================
 
 function updateAngleDisplay(angle) {
 
@@ -651,18 +672,28 @@ function updateAngleDisplay(angle) {
     angleValue.textContent = currentAngle;
 
     if (currentAngle < 90) {
-        angleDescription.textContent = "Direction vers la gauche";
+
+        angleDescription.textContent =
+            "Direction vers la gauche";
+
     } else if (currentAngle > 90) {
-        angleDescription.textContent = "Direction vers la droite";
+
+        angleDescription.textContent =
+            "Direction vers la droite";
+
     } else {
-        angleDescription.textContent = "Position centrale";
+
+        angleDescription.textContent =
+            "Position centrale";
+
     }
+
 }
 
 
-// --------------------------------
+// ==================================
 // AFFICHAGE DE LA PROPULSION
-// --------------------------------
+// ==================================
 
 function updateThrottleDisplay(percent) {
 
@@ -677,11 +708,17 @@ function updateThrottleDisplay(percent) {
     let color;
 
     if (propulsionPercent <= 35) {
+
         color = "#159b80";
+
     } else if (propulsionPercent <= 70) {
+
         color = "#1682bd";
+
     } else {
+
         color = "#e38b18";
+
     }
 
     document.documentElement.style.setProperty(
@@ -693,12 +730,13 @@ function updateThrottleDisplay(percent) {
         selectedDirection === "F"
         ? "MARCHE AVANT"
         : "MARCHE ARRIÈRE";
+
 }
 
 
-// --------------------------------
-// SÉLECTION DU SENS
-// --------------------------------
+// ==================================
+// CHOIX DU SENS DE MARCHE
+// ==================================
 
 function updateDirectionButtons() {
 
@@ -716,17 +754,19 @@ function updateDirectionButtons() {
         selectedDirection === "F"
         ? "MARCHE AVANT"
         : "MARCHE ARRIÈRE";
+
 }
+
 
 function chooseDirection(direction) {
 
-    // Sécurité : changement de sens uniquement à 0 %.
     if (propulsionPercent > 0) {
 
         propulsionHint.textContent =
             "Ramène d'abord la puissance à 0 % pour changer de sens.";
 
         return;
+
     }
 
     selectedDirection = direction;
@@ -737,7 +777,9 @@ function chooseDirection(direction) {
         direction === "F"
         ? "Marche avant sélectionnée"
         : "Marche arrière sélectionnée";
+
 }
+
 
 forwardBtn.addEventListener("click", () => {
     chooseDirection("F");
@@ -748,20 +790,24 @@ reverseBtn.addEventListener("click", () => {
 });
 
 
-// --------------------------------
+// ==================================
 // ÉCRITURE BLUETOOTH
-// --------------------------------
+// ==================================
 
 async function writeBluetoothLine(line) {
 
     if (!uartCharacteristic) return;
 
-    const data = new TextEncoder().encode(line + "\n");
-
     const characteristic = uartCharacteristic;
+
+    const data = new TextEncoder().encode(
+        line + "\n"
+    );
+
     const properties = characteristic.properties;
 
-    // Méthode d'écriture sans réponse
+    // Écriture sans réponse
+
     if (
         properties.writeWithoutResponse &&
         typeof characteristic.writeValueWithoutResponse === "function"
@@ -771,7 +817,8 @@ async function writeBluetoothLine(line) {
 
     }
 
-    // Méthode d'écriture avec réponse
+    // Écriture avec réponse
+
     else if (
         properties.write &&
         typeof characteristic.writeValueWithResponse === "function"
@@ -781,7 +828,8 @@ async function writeBluetoothLine(line) {
 
     }
 
-    // Compatibilité avec les anciens navigateurs
+    // Compatibilité anciens navigateurs
+
     else if (
         typeof characteristic.writeValue === "function"
     ) {
@@ -792,15 +840,18 @@ async function writeBluetoothLine(line) {
 
     else {
 
-        throw new Error("Écriture Bluetooth indisponible");
+        throw new Error(
+            "Écriture Bluetooth indisponible"
+        );
 
     }
+
 }
 
 
-// --------------------------------
+// ==================================
 // FILE D'ATTENTE BLUETOOTH
-// --------------------------------
+// ==================================
 
 async function processBluetoothQueue() {
 
@@ -810,14 +861,23 @@ async function processBluetoothQueue() {
 
     while (
         uartCharacteristic &&
-        (pendingSteering !== null || pendingPropulsion !== null)
+        (
+            pendingHeartbeat ||
+            pendingSteering !== null ||
+            pendingPropulsion !== null
+        )
     ) {
 
         let line;
 
-        // Priorité à la direction si les deux commandes
-        // sont en attente.
-        if (pendingSteering !== null) {
+        // Priorité au signal de présence
+
+        if (pendingHeartbeat) {
+
+            line = "H";
+            pendingHeartbeat = false;
+
+        } else if (pendingSteering !== null) {
 
             line = pendingSteering;
             pendingSteering = null;
@@ -838,25 +898,77 @@ async function processBluetoothQueue() {
             console.error("Erreur Bluetooth :", error);
 
             if (uartCharacteristic) {
+
                 setStatus(
                     "Erreur Bluetooth : " + error.message,
                     "#d94343"
                 );
+
             }
 
             pendingSteering = null;
             pendingPropulsion = null;
+            pendingHeartbeat = false;
+
             break;
+
         }
+
     }
 
     sending = false;
+
 }
 
 
-// --------------------------------
-// ENVOI DE L'ANGLE DE BARRE
-// --------------------------------
+// ==================================
+// SIGNAUX DE PRÉSENCE
+// ==================================
+
+function stopHeartbeat() {
+
+    if (heartbeatTimer !== null) {
+
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+
+    }
+
+    pendingHeartbeat = false;
+
+}
+
+
+function startHeartbeat() {
+
+    stopHeartbeat();
+
+    // Un signal toutes les 500 ms
+
+    heartbeatTimer = setInterval(() => {
+
+        if (
+            !uartCharacteristic ||
+            !bluetoothDevice ||
+            !bluetoothDevice.gatt.connected
+        ) {
+
+            return;
+
+        }
+
+        pendingHeartbeat = true;
+
+        processBluetoothQueue();
+
+    }, 500);
+
+}
+
+
+// ==================================
+// ENVOI DE LA BARRE
+// ==================================
 
 function sendAngle(angle) {
 
@@ -870,12 +982,13 @@ function sendAngle(angle) {
     pendingSteering = String(angle);
 
     processBluetoothQueue();
+
 }
 
 
-// --------------------------------
+// ==================================
 // ENVOI DE LA PROPULSION
-// --------------------------------
+// ==================================
 
 function sendPropulsion(percent) {
 
@@ -894,41 +1007,49 @@ function sendPropulsion(percent) {
 
     } else {
 
-        command = selectedDirection + String(percent);
+        command =
+            selectedDirection + String(percent);
 
     }
 
     pendingPropulsion = command;
 
     processBluetoothQueue();
+
 }
 
 
-// --------------------------------
-// CURSEUR DE BARRE
-// --------------------------------
+// ==================================
+// CURSEUR DE DIRECTION
+// ==================================
 
 angleSlider.addEventListener("input", () => {
 
-    updateAngleDisplay(Number(angleSlider.value));
+    updateAngleDisplay(
+        Number(angleSlider.value)
+    );
 
     sendAngle(currentAngle);
 
 });
 
 
-// --------------------------------
+// ==================================
 // BOUTONS DE RÉGLAGE FIN
-// --------------------------------
+// ==================================
 
 function changeAngle(increment) {
 
     if (!uartCharacteristic) return;
 
-    updateAngleDisplay(currentAngle + increment);
+    updateAngleDisplay(
+        currentAngle + increment
+    );
 
     sendAngle(currentAngle);
+
 }
+
 
 document.getElementById("minus5").addEventListener("click", () => {
     changeAngle(-5);
@@ -957,51 +1078,65 @@ document.getElementById("centerBtn").addEventListener("click", () => {
 });
 
 
-// --------------------------------
+// ==================================
 // CURSEUR DE PROPULSION
-// --------------------------------
+// ==================================
 
 throttleSlider.addEventListener("input", () => {
 
-    updateThrottleDisplay(Number(throttleSlider.value));
+    updateThrottleDisplay(
+        Number(throttleSlider.value)
+    );
 
-    propulsionHint.textContent = "Puissance en cours de réglage";
+    propulsionHint.textContent =
+        "Puissance en cours de réglage";
 
     sendPropulsion(propulsionPercent);
 
 });
 
 
-// --------------------------------
+// ==================================
 // BOUTON STOP
-// --------------------------------
+// ==================================
 
 stopBtn.addEventListener("click", () => {
 
+    if (!uartCharacteristic) return;
+
     updateThrottleDisplay(0);
 
-    propulsionHint.textContent = "Propulsion arrêtée";
+    propulsionHint.textContent =
+        "Propulsion arrêtée";
 
     sendPropulsion(0);
 
 });
 
 
-// --------------------------------
+// ==================================
 // CONNEXION BLUETOOTH
-// --------------------------------
+// ==================================
 
 connectBtn.addEventListener("click", async () => {
 
     if (!navigator.bluetooth) {
 
-        setStatus("Bluetooth non compatible", "#d94343");
+        setStatus(
+            "Bluetooth non compatible",
+            "#d94343"
+        );
+
         return;
+
     }
 
     try {
 
-        setStatus("Recherche de la micro:bit...", "#d68b00");
+        setStatus(
+            "Recherche de la micro:bit...",
+            "#d68b00"
+        );
 
         bluetoothDevice = await navigator.bluetooth.requestDevice({
 
@@ -1009,7 +1144,9 @@ connectBtn.addEventListener("click", async () => {
                 { namePrefix: "BBC micro:bit" }
             ],
 
-            optionalServices: [UART_SERVICE_UUID]
+            optionalServices: [
+                UART_SERVICE_UUID
+            ]
 
         });
 
@@ -1018,43 +1155,59 @@ connectBtn.addEventListener("click", async () => {
             handleDisconnect
         );
 
-        const server = await bluetoothDevice.gatt.connect();
+        const server =
+            await bluetoothDevice.gatt.connect();
 
-        const service = await server.getPrimaryService(
-            UART_SERVICE_UUID
-        );
+        const service =
+            await server.getPrimaryService(
+                UART_SERVICE_UUID
+            );
 
-        uartCharacteristic = await service.getCharacteristic(
-            UART_RX_UUID
-        );
+        uartCharacteristic =
+            await service.getCharacteristic(
+                UART_RX_UUID
+            );
 
         console.log(
             "Bluetooth connecté :",
             uartCharacteristic.properties
         );
 
-        setStatus("Connecté !", "#159b80");
+        setStatus(
+            "Connecté !",
+            "#159b80"
+        );
 
         connectBtn.style.display = "none";
         disconnectBtn.style.display = "inline-block";
 
         setControlsEnabled(true);
 
+        // Réinitialisation de la file
+
         pendingSteering = null;
         pendingPropulsion = null;
+        pendingHeartbeat = false;
 
         updateAngleDisplay(90);
 
         selectedDirection = "F";
+
         updateDirectionButtons();
 
         updateThrottleDisplay(0);
 
+        propulsionHint.textContent =
+            "Prêt à naviguer";
+
         // Commandes initiales
+
         sendAngle(90);
         sendPropulsion(0);
 
-        propulsionHint.textContent = "Prêt à naviguer";
+        // Démarrage de la surveillance Bluetooth
+
+        startHeartbeat();
 
     } catch (error) {
 
@@ -1065,30 +1218,57 @@ connectBtn.addEventListener("click", async () => {
             "#d94343"
         );
 
+        uartCharacteristic = null;
+
+        stopHeartbeat();
+
+        setControlsEnabled(false);
+
     }
+
 });
 
 
-// --------------------------------
-// DÉCONNEXION
-// --------------------------------
+// ==================================
+// DÉCONNEXION BLUETOOTH
+// ==================================
 
 disconnectBtn.addEventListener("click", () => {
 
-    if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+    if (
+        bluetoothDevice &&
+        bluetoothDevice.gatt.connected
+    ) {
+
         bluetoothDevice.gatt.disconnect();
+
     }
 
 });
 
+
+// ==================================
+// GESTION DE LA DÉCONNEXION
+// ==================================
+
 function handleDisconnect() {
+
+    // Arrêt des signaux de présence
+
+    stopHeartbeat();
+
+    // Suppression de la connexion
 
     uartCharacteristic = null;
 
     pendingSteering = null;
     pendingPropulsion = null;
+    pendingHeartbeat = false;
 
-    setStatus("Déconnecté", "#d94343");
+    setStatus(
+        "Déconnecté",
+        "#d94343"
+    );
 
     connectBtn.style.display = "inline-block";
     disconnectBtn.style.display = "none";
@@ -1101,20 +1281,22 @@ function handleDisconnect() {
     propulsionHint.textContent =
         "Reconnecte la micro:bit pour piloter.";
 
-    // Le programme micro:bit arrête aussi le moteur
-    // à la réception de l'événement de déconnexion.
 }
 
 
-// --------------------------------
+// ==================================
 // INITIALISATION
-// --------------------------------
+// ==================================
 
 setControlsEnabled(false);
 
 updateAngleDisplay(90);
+
 updateThrottleDisplay(0);
+
 updateDirectionButtons();
+
+stopHeartbeat();
 
 </script>
 
